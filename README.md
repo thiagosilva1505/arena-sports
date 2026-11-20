@@ -35,6 +35,20 @@ Abra no navegador: http://localhost:3000
 
 Não abra o `index.html` diretamente nem use Live Server nesta versão. O frontend precisa do servidor Node.js para consultar `/api/fixtures`.
 
+## Publicar no GitHub Pages
+
+O GitHub Pages publica apenas o frontend estático. O servidor Express deve ficar hospedado separadamente para manter as chaves das APIs protegidas e responder às rotas `/api/*`.
+
+1. Hospede este backend Node.js em um serviço que ofereça HTTPS e configure `API_FOOTBALL_KEY` e `HIGHLIGHTLY_API_KEY` como variáveis secretas do serviço.
+2. Configure `ALLOWED_ORIGINS` no backend com a origem do site Pages, por exemplo `https://thiagosilva1505.github.io`.
+3. Quando o backend estiver hospedado, crie a variável de Actions `ARENA_API_BASE_URL` com a URL HTTPS pública dele (sem barra final). Sem essa variável, o site estático publica, mas as áreas que consultam partidas, notícias e classificações ficam sem dados.
+4. Em **Settings → Pages → Build and deployment**, escolha **GitHub Actions** como origem.
+5. Envie uma alteração para `main` ou execute manualmente o workflow **Deploy GitHub Pages** na aba **Actions**.
+
+O workflow configura `public/api-config.js` durante a publicação. Não coloque chaves de API nessa variável nem nos arquivos da pasta `public`.
+
+Em contas GitHub Free, o Pages requer que o repositório seja público. Para manter este repositório privado, é necessário um plano que permita Pages para repositórios privados; a visibilidade do repositório não é alterada por este projeto.
+
 ## Endpoints locais
 - `http://localhost:3000/api/health` — verifica se o servidor está ativo e se uma chave foi configurada.
 - `http://localhost:3000/api/fixtures` — partidas do dia no fuso de São Paulo.

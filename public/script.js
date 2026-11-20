@@ -1,3 +1,6 @@
+const API_BASE_URL = String(window.ARENA_API_BASE_URL || "").replace(/\/+$/, "");
+const apiUrl = (pathname) => `${API_BASE_URL}${pathname}`;
+
 const searchInput = document.querySelector("#search-input");
 let newsCards = [...document.querySelectorAll(".news-card")];
 const sportButtons = [...document.querySelectorAll(".sport-chip")];
@@ -99,7 +102,7 @@ function renderNews(items) {
 async function loadNews() {
   newsStatus.textContent = "Buscando as notícias mais recentes...";
   try {
-    const response = await fetch("/api/news");
+    const response = await fetch(apiUrl("/api/news"));
     const data = await response.json();
     if (!response.ok) throw new Error(data.error || "Não foi possível carregar as notícias.");
     renderNews(data.response || []);
@@ -287,7 +290,7 @@ async function loadFixtures(isAutomatic = false) {
   refreshButton.textContent = "Carregando...";
   apiStatus.textContent = "Consultando a API esportiva...";
   try {
-    const response = await fetch("/api/fixtures");
+    const response = await fetch(apiUrl("/api/fixtures"));
     const data = await response.json();
     if (!response.ok) throw new Error(data.error || "Não foi possível consultar a API.");
     renderFixtures(data.response || []);
@@ -678,7 +681,7 @@ async function loadStandings() {
     if (NATIONAL_CUP_IDS.has(leagueId)) {
       standingsStatus.textContent = "Consultando jogos e fases da copa...";
       const response = await fetch(
-        `/api/highlightly/cup-fixtures?cup=${encodeURIComponent(leagueId)}&season=${seasonHighlightly}`
+        apiUrl(`/api/highlightly/cup-fixtures?cup=${encodeURIComponent(leagueId)}&season=${seasonHighlightly}`)
       );
       const data = await response.json();
       if (!response.ok) throw new Error(data.error || "Erro ao consultar as partidas da copa.");
@@ -690,7 +693,7 @@ async function loadStandings() {
     } else if (highlightlyLeagueId) {
       // Consulta Highlightly
       const response = await fetch(
-        `/api/highlightly/standings?leagueId=${highlightlyLeagueId}&season=${seasonHighlightly}`
+        apiUrl(`/api/highlightly/standings?leagueId=${highlightlyLeagueId}&season=${seasonHighlightly}`)
       );
 
       const data = await response.json();
@@ -718,7 +721,7 @@ async function loadStandings() {
     } else {
       // Alternativa: API-Football para campeonatos sem correspondência
       const response = await fetch(
-        `/api/standings?league=${encodeURIComponent(leagueId)}&season=${seasonApiFootball}`
+        apiUrl(`/api/standings?league=${encodeURIComponent(leagueId)}&season=${seasonApiFootball}`)
       );
 
       const data = await response.json();
@@ -874,7 +877,7 @@ async function loadStandings() {
       try {
         standingsStatus.textContent = `Classificação recebida • buscando fases eliminatórias na Highlightly...`;
         const response = await fetch(
-          `/api/highlightly/cup-fixtures?cup=${encodeURIComponent(leagueId)}&season=${seasonHighlightly}`
+          apiUrl(`/api/highlightly/cup-fixtures?cup=${encodeURIComponent(leagueId)}&season=${seasonHighlightly}`)
         );
         const data = await response.json();
         if (!response.ok) throw new Error(data.error || "Falha ao consultar as fases eliminatórias.");

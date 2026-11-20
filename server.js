@@ -4,6 +4,10 @@ const path = require("path");
 
 const app = express();
 const PORT = process.env.PORT || 3000;
+const allowedOrigins = new Set(
+  (process.env.ALLOWED_ORIGINS || "http://localhost:3000,http://127.0.0.1:3000")
+    .split(",").map(origin => origin.trim()).filter(Boolean)
+);
 const API_KEY = process.env.API_FOOTBALL_KEY;
 const API_BASE = "https://v3.football.api-sports.io";
 const HIGHLIGHTLY_API_KEY = process.env.HIGHLIGHTLY_API_KEY;
@@ -12,6 +16,18 @@ const highlightlyCupCache = new Map();
 const CUP_FIXTURE_CACHE_TTL = 60 * 1000;
 const NEWS_CACHE_TTL = 10 * 60 * 1000;
 let newsCache = { expiresAt: 0, items: [] };
+
+app.use((req, res, next) => {
+  const origin = req.headers.origin;
+  if (origin && allowedOrigins.has(origin)) {
+    res.setHeader("Access-Control-Allow-Origin", origin);
+    res.setHeader("Vary", "Origin");
+    res.setHeader("Access-Control-Allow-Methods", "GET, OPTIONS");
+    res.setHeader("Access-Control-Allow-Headers", "Content-Type");
+  }
+  if (req.method === "OPTIONS") return res.sendStatus(origin && allowedOrigins.has(origin) ? 204 : 403);
+  next();
+});
 
 app.use(express.static(path.join(__dirname, "public")));
 
