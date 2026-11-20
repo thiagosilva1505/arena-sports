@@ -10,6 +10,26 @@ const newsGrid = document.querySelector("#news-grid");
 const newsStatus = document.querySelector("#news-status");
 const menuToggle = document.querySelector("#menu-toggle");
 const mainNav = document.querySelector("#main-nav");
+const themeToggle = document.querySelector("#theme-toggle");
+const themeToggleLabel = document.querySelector("#theme-toggle-label");
+
+function setTheme(theme) {
+  const isLight = theme === "light";
+  document.documentElement.dataset.theme = isLight ? "light" : "dark";
+  themeToggle?.setAttribute("aria-pressed", String(isLight));
+  themeToggle?.setAttribute("aria-label", `Ativar tema ${isLight ? "escuro" : "claro"}`);
+  if (themeToggleLabel) themeToggleLabel.textContent = `Tema ${isLight ? "escuro" : "claro"}`;
+  const icon = themeToggle?.querySelector(".theme-toggle-icon");
+  if (icon) icon.textContent = isLight ? "☾" : "☀";
+  try {
+    localStorage.setItem("arena-sports-theme", isLight ? "light" : "dark");
+  } catch {}
+}
+
+setTheme(document.documentElement.dataset.theme);
+themeToggle?.addEventListener("click", () => {
+  setTheme(document.documentElement.dataset.theme === "light" ? "dark" : "light");
+});
 
 let activeSport = "Todos";
 
@@ -405,12 +425,12 @@ function renderCupStatistics(fixtures, seasonLabel, message) {
 
 function translateCupRound(round) {
   return String(round || "Fases e partidas")
-    .replace(/\bsemi[- ]finals?\b/gi, "Semifinais")
-    .replace(/\bquarter[- ]finals?\b/gi, "Quartas de final")
-    .replace(/\bround of 16\b/gi, "Oitavas de final")
-    .replace(/\bround of 32\b/gi, "16 avos de final")
-    .replace(/\bround of 64\b/gi, "32 avos de final")
-    .replace(/\bround of 128\b/gi, "64 avos de final")
+    .replace(/\bsemi[- ]?finals?\b/gi, "Semifinais")
+    .replace(/\bquarter[- ]?finals?\b/gi, "Quartas de final")
+    .replace(/\b(?:round(?: of)? 16|last 16|1\/8\s*-?\s*(?:finals?)?|octavos(?: de final)?|oitavas(?: de final)?)\b/gi, "Oitavas de final")
+    .replace(/\b(?:round(?: of)? 32|last 32|32nd finals?|1\/16\s*-?\s*(?:finals?)?|dieciseisavos(?: de final)?|16 avos(?: de final)?)\b/gi, "16 avos de final")
+    .replace(/\b(?:cuartos(?: de final)?|quartas(?: de final)?)\b/gi, "Quartas de final")
+    .replace(/\b(?:semifinales|semifinais)\b/gi, "Semifinais")
     .replace(/\bround of 8\b/gi, "Quartas de final")
     .replace(/\bround of 4\b/gi, "Semifinais")
     .replace(/\bround of 2\b/gi, "Final")
@@ -424,13 +444,19 @@ function translateCupRound(round) {
 function translateCupStatus(description) {
   const translations = {
     "Not started": "Agendado",
+    "Match Not Started": "Agendado",
     "First half": "1º tempo",
+    "First Half": "1º tempo",
     "Half time": "Intervalo",
+    "Halftime": "Intervalo",
     "Second half": "2º tempo",
+    "Second Half": "2º tempo",
     "Extra time": "Prorrogação",
+    "Extra Time": "Prorrogação",
     "Break time": "Intervalo da prorrogação",
     "Penalties": "Disputa de pênaltis",
     "Finished": "Encerrado",
+    "Match Finished": "Encerrado",
     "Finished after penalties": "Encerrado nos pênaltis",
     "Finished after extra time": "Encerrado na prorrogação",
     "Postponed": "Adiado",
@@ -489,9 +515,43 @@ function renderCupFixtures(fixtures, append = false) {
   return fixtures.length;
 }
 
-function isKnockoutRound(round) {
-  return /\b(final|semi[- ]finals?|quarter[- ]finals?|round of (2|4|8|16|32|64)|last 16|knockout|play.?offs?)\b/i
-    .test(String(round || ""));
+function isKnockoutRound(round, { includePlayoffs = false, includeRound32 = true } = {}) {
+  const value = String(round || "");
+  if (!includePlayoffs && /play[\s-]?offs?/i.test(value)) return false;
+  const laterStages = /\b(?:finals?|semi[- ]?finals?|quarter[- ]?finals?|round(?: of)? (?:2|4|8|16)|last 16|1\/8|octavos|oitavas|cuartos|quartas|semifinales|semifinais)\b/i.test(value);
+  const roundOf32 = includeRound32 && /\b(?:round(?: of)? 32|last 32|32nd finals?|1\/16|dieciseisavos)\b/i.test(value);
+  return laterStages || roundOf32;
+}
+
+function normalizeApiFootballCupFixtures(fixtures) {
+  const statuses = {
+    NS: "Not started", TBD: "To be announced", 1H: "First Half", HT: "Half time",
+    2H: "Second Half", ET: "Extra Time", BT: "Break time", P: "Penalties",
+    LIVE: "In progress", FT: "Match Finished", AET: "Finished after extra time",
+    PEN: "Finished after penalties", PST: "Postponed", CANC: "Cancelled",
+    ABD: "Abandoned", INT: "Interrupted", AWD: "Awarded"
+  };
+  return fixtures.map(item => {
+    const status = item.fixture?.status || {};
+    const goals = item.goals || {};
+    const penalties = item.score?.penalty || {};
+    const hasScore = goals.home != null && goals.away != null;
+    const hasPenalties = penalties.home != null && penalties.away != null;
+    return {
+      round: item.league?.round,
+      date: item.fixture?.date,
+      homeTeam: { name: item.teams?.home?.name },
+      awayTeam: { name: item.teams?.away?.name },
+      state: {
+        description: statuses[status.short] || status.long || "Unknown",
+        clock: status.elapsed,
+        score: {
+          current: hasScore ? `${goals.home} - ${goals.away}` : "",
+          penalties: hasPenalties ? `${penalties.home} - ${penalties.away}` : ""
+        }
+      }
+    };
+  });
 }
 
 
@@ -628,7 +688,7 @@ const HIGHLIGHTLY_LEAGUE_IDS = {
   "1": 1635      // Copa do Mundo
 };
 
-const NATIONAL_CUP_IDS = new Set(["73", "130", "45", "143", "137", "81", "66", "96", "206", "504", "257"]);
+const NATIONAL_CUP_IDS = new Set(["73", "130", "45", "143", "137", "81", "66", "96", "257"]);
 const CONTINENTAL_KNOCKOUT_IDS = new Set(["13", "11", "2", "3", "848"]);
 
 // Campeonatos que devem exibir somente a temporada atual.
@@ -873,7 +933,25 @@ async function loadStandings() {
     }).join("");
 
     let knockoutNote = "";
-    if (CONTINENTAL_KNOCKOUT_IDS.has(leagueId)) {
+    if (leagueId === "128") {
+      try {
+        standingsStatus.textContent = "Classificação recebida • buscando mata-mata do Apertura e Clausura...";
+        const response = await fetch(apiUrl(`/api/argentina/knockout?season=${seasonApiFootball}`));
+        const data = await response.json();
+        if (!response.ok) throw new Error(data.error || "Falha ao consultar o mata-mata argentino.");
+        const fixtures = normalizeApiFootballCupFixtures(Array.isArray(data.response) ? data.response : []);
+        const knockoutFixtures = fixtures.filter(item => isKnockoutRound(item.round, {
+          includePlayoffs: true,
+          includeRound32: false
+        }));
+        const knockoutCount = renderCupFixtures(knockoutFixtures, true);
+        knockoutNote = knockoutCount
+          ? `${knockoutCount} partidas de mata-mata do Apertura e Clausura`
+          : "mata-mata do Apertura e Clausura ainda sem partidas disponíveis";
+      } catch {
+        knockoutNote = "mata-mata do Apertura e Clausura indisponível no momento";
+      }
+    } else if (CONTINENTAL_KNOCKOUT_IDS.has(leagueId)) {
       try {
         standingsStatus.textContent = `Classificação recebida • buscando fases eliminatórias na Highlightly...`;
         const response = await fetch(
@@ -882,7 +960,10 @@ async function loadStandings() {
         const data = await response.json();
         if (!response.ok) throw new Error(data.error || "Falha ao consultar as fases eliminatórias.");
         const fixtures = Array.isArray(data.response) ? data.response : [];
-        const knockoutFixtures = fixtures.filter(item => isKnockoutRound(item.round));
+        const knockoutFixtures = fixtures.filter(item => isKnockoutRound(item.round, {
+          includePlayoffs: false,
+          includeRound32: true
+        }));
         const knockoutCount = renderCupFixtures(knockoutFixtures, true);
         knockoutNote = knockoutCount
           ? `${knockoutCount} partidas de mata-mata`
