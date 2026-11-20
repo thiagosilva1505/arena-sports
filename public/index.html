@@ -6,7 +6,6 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <meta name="description" content="Arena Sports: notícias, placares e estatísticas esportivas.">
   <title>Arena Sports | Notícias e resultados</title>
-  <script>try { document.documentElement.dataset.theme = localStorage.getItem("arena-sports-theme") === "light" ? "light" : "dark"; } catch { document.documentElement.dataset.theme = "dark"; }</script>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
@@ -32,9 +31,6 @@
       </nav>
       <label class="search-box"><span aria-hidden="true">⌕</span><input id="search-input" type="search"
           placeholder="Buscar notícia..." aria-label="Buscar notícia"></label>
-      <button class="theme-toggle" id="theme-toggle" type="button" aria-pressed="false" aria-label="Ativar tema claro">
-        <span class="theme-toggle-icon" aria-hidden="true">☀</span><span id="theme-toggle-label">Tema claro</span>
-      </button>
     </div>
   </header>
 
@@ -107,9 +103,11 @@
               <option value="94">Portugal - Primeira Liga</option>
               <option value="96">Portugal - Taça de Portugal</option>
               <option value="203">Turquia - Süper Lig</option>
+              <option value="206">Turquia - Copa da Turquia</option>
             </optgroup>
             <optgroup label="Arábia Saudita">
               <option value="307">Saudi Pro League</option>
+              <option value="504">King's Cup</option>
             </optgroup>
             <optgroup label="Estados Unidos">
               <option value="253">MLS</option>

@@ -14,8 +14,6 @@ const HIGHLIGHTLY_API_KEY = process.env.HIGHLIGHTLY_API_KEY;
 const HIGHLIGHTLY_BASE = "https://soccer.highlightly.net";
 const highlightlyCupCache = new Map();
 const CUP_FIXTURE_CACHE_TTL = 60 * 1000;
-const argentinaKnockoutCache = new Map();
-const ARGENTINA_KNOCKOUT_CACHE_TTL = 5 * 60 * 1000;
 const NEWS_CACHE_TTL = 10 * 60 * 1000;
 let newsCache = { expiresAt: 0, items: [] };
 
@@ -143,6 +141,8 @@ const HIGHLIGHTLY_KNOCKOUT_COMPETITIONS = {
   81: { name: "DFB-Pokal", aliases: ["DFB-Pokal", "DFB Pokal"], country: "Germany" },
   66: { name: "Coupe de France", aliases: ["Coupe de France"], country: "France" },
   96: { name: "Taça de Portugal", aliases: ["Taça de Portugal", "Taca de Portugal"], country: "Portugal" },
+  206: { name: "Turkish Cup", aliases: ["Turkish Cup", "Türkiye Kupası", "Turkiye Kupasi"], country: "Turkey" },
+  504: { name: "King's Cup", aliases: ["King's Cup", "Kings Cup"], country: "Saudi Arabia" },
   257: { name: "US Open Cup", aliases: ["US Open Cup"], country: "USA" },
   13: { name: "Libertadores", aliases: ["CONMEBOL Libertadores", "Copa Libertadores"], country: "World", knownId: 11847 },
   11: { name: "Sudamericana", aliases: ["CONMEBOL Sudamericana", "Copa Sudamericana"], country: "World", knownId: 10145 },
@@ -338,33 +338,6 @@ app.get("/api/standings", async (req, res) => {
     res.json(data);
   } catch (error) {
     res.status(error.status || 500).json({ error: error.message || "Erro interno ao consultar classificação." });
-  }
-});
-
-function isArgentinaKnockoutRound(round) {
-  const value = String(round || "");
-  return /(?:\b1\/8\b|round\s+of\s+16|last\s+16|octavos|oitavas|quarter[-\s]?final|cuartos|quartas|semi[-\s]?final|semifinal|final\b)/i.test(value);
-}
-
-app.get("/api/argentina/knockout", async (req, res) => {
-  const season = String(req.query.season || new Date().getFullYear());
-  if (!/^\d{4}$/.test(season)) {
-    return res.status(400).json({ error: "Informe uma temporada válida." });
-  }
-
-  const cached = argentinaKnockoutCache.get(season);
-  if (cached && cached.expiresAt > Date.now()) return res.json({ response: cached.matches, cached: true });
-
-  try {
-    const data = await apiFootball("/fixtures", { league: "128", season });
-    const matches = (data.response || []).filter(item => isArgentinaKnockoutRound(item.league?.round));
-    argentinaKnockoutCache.set(season, {
-      matches,
-      expiresAt: Date.now() + ARGENTINA_KNOCKOUT_CACHE_TTL
-    });
-    res.json({ response: matches, cached: false });
-  } catch (error) {
-    res.status(error.status || 500).json({ error: error.message || "Erro ao consultar o mata-mata argentino." });
   }
 });
 
