@@ -130,7 +130,7 @@ function normalizeProviderLabel(value) {
 function isAllowedHighlightlyFixture(match) {
   const leagueName = normalizeProviderLabel(match.league?.name);
   const countryName = normalizeProviderLabel(match.country?.name || match.league?.country?.name);
-  if (/\b(women|woman|female|feminino|feminina|u\s?\d{2}|under[-\s]?\d{2}|youth|reserves?)\b/.test(leagueName)) return false;
+  if (/\b(women|woman|female|feminino|feminina|u[-\s]?\d{2}|under[-\s]?\d{2}|sub[-\s]?\d{2}|youth|junior|juvenil|reserves?|primavera|academy|olympics?)\b/.test(leagueName)) return false;
   return ALLOWED_HIGHLIGHTLY_COMPETITIONS.some(group => {
     const countryMatches = group.countries.includes(countryName)
       || (group.countries.includes("world") && countryName === "international");

@@ -10,6 +10,32 @@ const newsGrid = document.querySelector("#news-grid");
 const newsStatus = document.querySelector("#news-status");
 const menuToggle = document.querySelector("#menu-toggle");
 const mainNav = document.querySelector("#main-nav");
+const themeToggle = document.querySelector("#theme-toggle");
+
+let savedTheme = "dark";
+try {
+  savedTheme = localStorage.getItem("arena-theme") === "light" ? "light" : "dark";
+} catch {}
+
+function applyTheme(theme, save = false) {
+  const isLight = theme === "light";
+  document.documentElement.dataset.theme = isLight ? "light" : "dark";
+  if (themeToggle) {
+    themeToggle.innerHTML = isLight
+      ? '<span aria-hidden="true">☾</span><span>Tema escuro</span>'
+      : '<span aria-hidden="true">☀</span><span>Tema claro</span>';
+    themeToggle.setAttribute("aria-label", `Ativar tema ${isLight ? "escuro" : "claro"}`);
+    themeToggle.setAttribute("aria-pressed", String(isLight));
+  }
+  if (save) {
+    try { localStorage.setItem("arena-theme", isLight ? "light" : "dark"); } catch {}
+  }
+}
+
+applyTheme(savedTheme);
+themeToggle?.addEventListener("click", () => {
+  applyTheme(document.documentElement.dataset.theme === "light" ? "dark" : "light", true);
+});
 
 let activeSport = "Todos";
 
