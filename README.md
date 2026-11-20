@@ -1,4 +1,5 @@
 # Arena Sports — versão com backend
+Site de notícias e estatísticas esportivas, com resultados em tempo real.
 
 ## Requisitos
 - Node.js 18 ou superior
