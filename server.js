@@ -92,21 +92,34 @@ async function apiHighlightly(pathname, params = {}) {
   return data;
 }
 
-// Mantém a cobertura de competições da seção de placares após a troca de provedor.
+// Placares incluem os torneios disponíveis em Classificações e competições
+// oficiais de seleções principais. Amistosos e torneios de base ficam de fora.
 const ALLOWED_HIGHLIGHTLY_COMPETITIONS = [
-  { country: "brazil", names: ["serie a", "serie b", "copa do brasil"] },
-  { country: "argentina", names: ["liga profesional argentina", "liga profesional"] },
-  { country: "turkey", names: ["super lig"] },
-  { country: "saudi arabia", names: ["pro league"] },
-  { country: "united states", names: ["major league soccer"] },
-  { country: "world", names: [
-    "world cup", "fifa world cup", "euro championship", "uefa european championship",
-    "euro championship - qualification", "uefa nations league", "africa cup of nations",
-    "asian cup", "copa america", "concacaf gold cup", "concacaf nations league",
-    "friendlies", "international friendlies", "world cup - qualification",
-    "world cup qualification", "africa cup of nations - qualification",
-    "asian cup - qualification", "concacaf gold cup - qualification",
-    "gold cup qualification", "intercontinental play-offs", "euro qualification"
+  { countries: ["brazil"], names: ["serie a", "serie b", "copa do brasil"] },
+  { countries: ["argentina"], names: ["liga profesional", "copa argentina"] },
+  { countries: ["england"], names: ["premier league", "championship", "fa cup"] },
+  { countries: ["spain"], names: ["la liga", "copa del rey"] },
+  { countries: ["italy"], names: ["serie a", "coppa italia"] },
+  { countries: ["germany"], names: ["bundesliga", "dfb-pokal", "dfb pokal"] },
+  { countries: ["france"], names: ["ligue 1", "coupe de france"] },
+  { countries: ["portugal"], names: ["primeira liga", "taca de portugal"] },
+  { countries: ["turkey", "turkiye"], names: ["super lig", "turkish cup", "turkiye kupasi"] },
+  { countries: ["saudi arabia"], names: ["pro league", "king's cup", "kings cup"] },
+  { countries: ["united states", "usa", "united states of america"], names: ["major league soccer", "us open cup"] },
+  { countries: ["world", "europe", "south america", "africa", "asia", "north america", "oceania"], names: [
+    "conmebol libertadores", "copa libertadores", "libertadores",
+    "conmebol sudamericana", "copa sudamericana", "sudamericana",
+    "uefa champions league", "champions league", "uefa europa league", "europa league",
+    "uefa conference league", "uefa europa conference league", "conference league",
+    "copa do mundo", "world cup", "fifa world cup", "euro championship",
+    "uefa european championship", "euro championship - qualification",
+    "uefa european championship - qualification", "euro qualification", "uefa nations league",
+    "africa cup of nations", "african cup of nations", "afcon", "asian cup", "afc asian cup",
+    "ofc nations cup", "arab cup",
+    "copa america", "concacaf gold cup", "gold cup", "concacaf nations league",
+    "world cup - qualification", "world cup qualification",
+    "africa cup of nations - qualification", "asian cup - qualification",
+    "concacaf gold cup - qualification", "gold cup qualification", "intercontinental play-offs"
   ] }
 ];
 
@@ -117,15 +130,10 @@ function normalizeProviderLabel(value) {
 function isAllowedHighlightlyFixture(match) {
   const leagueName = normalizeProviderLabel(match.league?.name);
   const countryName = normalizeProviderLabel(match.country?.name || match.league?.country?.name);
+  if (/\b(women|woman|female|feminino|feminina|u\s?\d{2}|under[-\s]?\d{2}|youth|reserves?)\b/.test(leagueName)) return false;
   return ALLOWED_HIGHLIGHTLY_COMPETITIONS.some(group => {
-    const countryAliases = {
-      turkey: ["turkey", "turkiye"],
-      "saudi arabia": ["saudi arabia", "saudi-arabia"],
-      "united states": ["united states", "usa", "united states of america"]
-    };
-    const worldCountries = ["world", "international", "europe", "asia", "africa", "south america", "north america", "oceania"];
-    const countryMatches = (countryAliases[group.country] || [group.country]).includes(countryName)
-      || (group.country === "world" && worldCountries.includes(countryName));
+    const countryMatches = group.countries.includes(countryName)
+      || (group.countries.includes("world") && countryName === "international");
     return countryMatches && group.names.some(name => leagueName === name || leagueName.includes(name));
   });
 }

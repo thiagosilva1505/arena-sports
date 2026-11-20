@@ -187,6 +187,33 @@ function translateCompetitionName(league = {}) {
     "usa|major league soccer": "MLS"
   };
   const competitionSpecific = {
+    "premier league": "Campeonato Inglês - Premier League",
+    "championship": "Campeonato Inglês - Championship",
+    "fa cup": "Copa da Inglaterra",
+    "la liga": "Campeonato Espanhol - La Liga",
+    "copa del rey": "Copa do Rei da Espanha",
+    "serie a": country === "italy" ? "Campeonato Italiano - Serie A" : league.name,
+    "coppa italia": "Copa da Itália",
+    "bundesliga": "Campeonato Alemão - Bundesliga",
+    "dfb-pokal": "Copa da Alemanha",
+    "dfb pokal": "Copa da Alemanha",
+    "ligue 1": "Campeonato Francês - Ligue 1",
+    "coupe de france": "Copa da França",
+    "primeira liga": "Campeonato Português - Primeira Liga",
+    "taca de portugal": "Taça de Portugal",
+    "turkish cup": "Copa da Turquia",
+    "king's cup": "Copa do Rei da Arábia Saudita",
+    "kings cup": "Copa do Rei da Arábia Saudita",
+    "us open cup": "Copa dos Estados Unidos",
+    "copa argentina": "Copa Argentina",
+    "conmebol libertadores": "Copa Libertadores",
+    "copa libertadores": "Copa Libertadores",
+    "conmebol sudamericana": "Copa Sul-Americana",
+    "copa sudamericana": "Copa Sul-Americana",
+    "uefa champions league": "Liga dos Campeões da UEFA",
+    "uefa europa league": "Liga Europa da UEFA",
+    "uefa conference league": "Liga Conferência da UEFA",
+    "uefa europa conference league": "Liga Conferência da UEFA",
     "world cup": "Copa do Mundo",
     "fifa world cup": "Copa do Mundo",
     "fifa world cup - qualification": "Eliminatórias da Copa do Mundo",
@@ -229,11 +256,23 @@ function translateCompetitionName(league = {}) {
 function translateCompetitionCountry(country) {
   const countries = {
     "world": "Seleções",
+    "international": "Seleções",
+    "europe": "Europa",
+    "south america": "América do Sul",
     "brazil": "Brasil",
     "argentina": "Argentina",
+    "england": "Inglaterra",
+    "spain": "Espanha",
+    "italy": "Itália",
+    "germany": "Alemanha",
+    "france": "França",
+    "portugal": "Portugal",
     "turkey": "Turquia",
+    "turkiye": "Turquia",
     "saudi-arabia": "Arábia Saudita",
-    "usa": "Estados Unidos"
+    "saudi arabia": "Arábia Saudita",
+    "usa": "Estados Unidos",
+    "united states": "Estados Unidos"
   };
   return countries[normalizeCompetitionLabel(country)] || country;
 }
