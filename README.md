@@ -39,11 +39,11 @@ Não abra o `index.html` diretamente nem use Live Server nesta versão. O fronte
 
 O GitHub Pages publica apenas o frontend estático. O servidor Express deve ficar hospedado separadamente para manter as chaves das APIs protegidas e responder às rotas `/api/*`.
 
-1. Hospede este backend Node.js em um serviço que ofereça HTTPS e configure `API_FOOTBALL_KEY` e `HIGHLIGHTLY_API_KEY` como variáveis secretas do serviço.
-2. Configure `ALLOWED_ORIGINS` no backend com a origem do site Pages, por exemplo `https://thiagosilva1505.github.io`.
-3. Quando o backend estiver hospedado, crie a variável de Actions `ARENA_API_BASE_URL` com a URL HTTPS pública dele (sem barra final). Sem essa variável, o site estático publica, mas as áreas que consultam partidas, notícias e classificações ficam sem dados.
-4. Em **Settings → Pages → Build and deployment**, escolha **GitHub Actions** como origem.
-5. Envie uma alteração para `main` ou execute manualmente o workflow **Deploy GitHub Pages** na aba **Actions**.
+1. No Render, crie um Blueprint conectado ao repositório `thiagosilva1505/arena-sports`; o arquivo `render.yaml` configura o Web Service Node, a verificação de saúde e os nomes das variáveis secretas.
+2. Durante a criação do Blueprint, informe `API_FOOTBALL_KEY` e `HIGHLIGHTLY_API_KEY` nos campos secretos solicitados pelo Render. Não use os valores no arquivo `render.yaml` nem no GitHub.
+3. Aguarde o serviço ficar disponível e copie sua URL HTTPS `onrender.com`.
+4. No GitHub, abra **Settings → Secrets and variables → Actions → Variables** e crie `ARENA_API_BASE_URL` com a URL do backend, sem barra final. `ALLOWED_ORIGINS` já está definido no Blueprint para o site Pages.
+5. Execute o workflow **Deploy GitHub Pages** na aba **Actions**. Ele gravará a URL no `public/api-config.js` publicado.
 
 O workflow configura `public/api-config.js` durante a publicação. Não coloque chaves de API nessa variável nem nos arquivos da pasta `public`.
 

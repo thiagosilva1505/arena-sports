@@ -1,0 +1,17 @@
+services:
+  - type: web
+    name: arena-sports-api
+    runtime: node
+    plan: free
+    buildCommand: npm ci
+    startCommand: npm start
+    healthCheckPath: /api/health
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: API_FOOTBALL_KEY
+        sync: false
+      - key: HIGHLIGHTLY_API_KEY
+        sync: false
+      - key: ALLOWED_ORIGINS
+        value: https://thiagosilva1505.github.io
