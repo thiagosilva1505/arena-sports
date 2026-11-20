@@ -188,7 +188,11 @@ function translateCompetitionName(league = {}) {
   };
   const competitionSpecific = {
     "world cup": "Copa do Mundo",
+    "fifa world cup": "Copa do Mundo",
+    "fifa world cup - qualification": "Eliminatórias da Copa do Mundo",
     "euro championship": "Eurocopa",
+    "uefa european championship": "Eurocopa",
+    "uefa european championship - qualification": "Eliminatórias da Eurocopa",
     "euro championship - qualification": "Eliminatórias da Eurocopa",
     "uefa nations league": "Liga das Nações da UEFA",
     "copa america": "Copa América",
@@ -201,11 +205,17 @@ function translateCompetitionName(league = {}) {
     "concacaf gold cup - qualification": "Eliminatórias da Copa Ouro da CONCACAF",
     "concacaf nations league": "Liga das Nações da CONCACAF",
     "world cup - qualification africa": "Eliminatórias da Copa do Mundo - África",
+    "world cup qualification - africa": "Eliminatórias da Copa do Mundo - África",
     "world cup - qualification asia": "Eliminatórias da Copa do Mundo - Ásia",
+    "world cup qualification - asia": "Eliminatórias da Copa do Mundo - Ásia",
     "world cup - qualification concacaf": "Eliminatórias da Copa do Mundo - CONCACAF",
+    "world cup qualification - concacaf": "Eliminatórias da Copa do Mundo - CONCACAF",
     "world cup - qualification europe": "Eliminatórias da Copa do Mundo - Europa",
+    "world cup qualification - europe": "Eliminatórias da Copa do Mundo - Europa",
     "world cup - qualification oceania": "Eliminatórias da Copa do Mundo - Oceania",
+    "world cup qualification - oceania": "Eliminatórias da Copa do Mundo - Oceania",
     "world cup - qualification south america": "Eliminatórias da Copa do Mundo - América do Sul",
+    "world cup qualification - south america": "Eliminatórias da Copa do Mundo - América do Sul",
     "world cup - qualification intercontinental play-offs": "Repescagem intercontinental da Copa do Mundo",
     "copa do brasil": "Copa do Brasil",
     "liga profesional argentina": "Liga Profissional Argentina",
@@ -288,16 +298,16 @@ async function loadFixtures(isAutomatic = false) {
   if (document.hidden && isAutomatic) return;
   refreshButton.disabled = true;
   refreshButton.textContent = "Carregando...";
-  apiStatus.textContent = "Consultando a API esportiva...";
+  apiStatus.textContent = "Consultando a Highlightly...";
   try {
     const response = await fetch(apiUrl("/api/fixtures"));
     const data = await response.json();
     if (!response.ok) throw new Error(data.error || "Não foi possível consultar a API.");
     renderFixtures(data.response || []);
     const updated = new Intl.DateTimeFormat("pt-BR", { hour: "2-digit", minute: "2-digit", second: "2-digit" }).format(new Date());
-    apiStatus.textContent = `Dados reais recebidos da API • última consulta às ${updated}. Atualização automática a cada 20 minutos.`;
+    apiStatus.textContent = `Dados reais recebidos da Highlightly • última consulta às ${updated}. Atualização automática a cada 20 minutos.`;
   } catch (error) {
-    apiStatus.textContent = `${error.message} Confira a chave no arquivo .env e se o servidor está rodando.`;
+    apiStatus.textContent = `${error.message} Confira HIGHLIGHTLY_API_KEY no arquivo .env e se o servidor está rodando.`;
   } finally {
     refreshButton.disabled = false;
     refreshButton.textContent = "↻ Atualizar placares";

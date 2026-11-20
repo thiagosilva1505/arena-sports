@@ -14,8 +14,10 @@ const HIGHLIGHTLY_API_KEY = process.env.HIGHLIGHTLY_API_KEY;
 const HIGHLIGHTLY_BASE = "https://soccer.highlightly.net";
 const highlightlyCupCache = new Map();
 const CUP_FIXTURE_CACHE_TTL = 60 * 1000;
+const FIXTURE_CACHE_TTL = 45 * 1000;
 const NEWS_CACHE_TTL = 10 * 60 * 1000;
 let newsCache = { expiresAt: 0, items: [] };
+let fixtureCache = { expiresAt: 0, date: "", response: [] };
 
 app.use((req, res, next) => {
   const origin = req.headers.origin;
@@ -90,47 +92,78 @@ async function apiHighlightly(pathname, params = {}) {
   return data;
 }
 
-// COMPETIÇÕES PERMITIDAS NO ARENA SPORTS
-const ALLOWED_LEAGUES = [
-  // Brasil
-  71, // Brasileirão Série A
-  72, // Brasileirão Série B
-  73, // Copa do Brasil
-
-  // Argentina
-  128, // Liga Profesional
-
-  // Turquia
-  203, // Süper Lig
-
-  // Arábia Saudita
-  307, // Saudi Pro League
-
-  // Estados Unidos
-  253, // Major League Soccer
-
-  // Seleções nacionais
-  1,   // Copa do Mundo
-  4,   // Eurocopa
-  5,   // UEFA Nations League
-  6,   // Copa Africana de Nações
-  7,   // Copa da Ásia
-  9,   // Copa América
-  10,  // Amistosos internacionais
-  22,  // Copa Ouro da CONCACAF
-  29,  // Eliminatórias da Copa - África
-  30,  // Eliminatórias da Copa - Ásia
-  31,  // Eliminatórias da Copa - CONCACAF
-  32,  // Eliminatórias da Copa - Europa
-  33,  // Eliminatórias da Copa - Oceania
-  34,  // Eliminatórias da Copa - América do Sul
-  35,  // Eliminatórias da Copa da Ásia
-  36,  // Eliminatórias da Copa Africana de Nações
-  37,  // Repescagem intercontinental da Copa
-  536, // CONCACAF Nations League
-  858, // Eliminatórias da Copa Ouro
-  960, // Eliminatórias da Eurocopa
+// Mantém a cobertura de competições da seção de placares após a troca de provedor.
+const ALLOWED_HIGHLIGHTLY_COMPETITIONS = [
+  { country: "brazil", names: ["serie a", "serie b", "copa do brasil"] },
+  { country: "argentina", names: ["liga profesional argentina", "liga profesional"] },
+  { country: "turkey", names: ["super lig"] },
+  { country: "saudi arabia", names: ["pro league"] },
+  { country: "united states", names: ["major league soccer"] },
+  { country: "world", names: [
+    "world cup", "fifa world cup", "euro championship", "uefa european championship",
+    "euro championship - qualification", "uefa nations league", "africa cup of nations",
+    "asian cup", "copa america", "concacaf gold cup", "concacaf nations league",
+    "friendlies", "international friendlies", "world cup - qualification",
+    "world cup qualification", "africa cup of nations - qualification",
+    "asian cup - qualification", "concacaf gold cup - qualification",
+    "gold cup qualification", "intercontinental play-offs", "euro qualification"
+  ] }
 ];
+
+function normalizeProviderLabel(value) {
+  return String(value || "").normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase().trim();
+}
+
+function isAllowedHighlightlyFixture(match) {
+  const leagueName = normalizeProviderLabel(match.league?.name);
+  const countryName = normalizeProviderLabel(match.country?.name || match.league?.country?.name);
+  return ALLOWED_HIGHLIGHTLY_COMPETITIONS.some(group => {
+    const countryAliases = {
+      turkey: ["turkey", "turkiye"],
+      "saudi arabia": ["saudi arabia", "saudi-arabia"],
+      "united states": ["united states", "usa", "united states of america"]
+    };
+    const worldCountries = ["world", "international", "europe", "asia", "africa", "south america", "north america", "oceania"];
+    const countryMatches = (countryAliases[group.country] || [group.country]).includes(countryName)
+      || (group.country === "world" && worldCountries.includes(countryName));
+    return countryMatches && group.names.some(name => leagueName === name || leagueName.includes(name));
+  });
+}
+
+function normalizeHighlightlyFixture(match) {
+  const state = match.state || {};
+  const descriptions = {
+    "to be announced": "TBD", "not started": "NS", "first half": "1H",
+    "second half": "2H", "half time": "HT", "break time": "BT",
+    "extra time": "ET", "penalties": "P", "in progress": "LIVE",
+    "finished": "FT", "finished after penalties": "PEN",
+    "finished after extra time": "AET", "postponed": "PST",
+    "suspended": "SUSP", "cancelled": "CANC", "abandoned": "ABD",
+    "awarded": "AWD", "interrupted": "INT"
+  };
+  const currentScore = String(state.score?.current || "").match(/(\d+)\s*[-–:]\s*(\d+)/);
+  return {
+    fixture: {
+      id: match.id,
+      date: match.date,
+      status: {
+        short: descriptions[normalizeProviderLabel(state.description)] || "TBD",
+        long: state.description || "Unknown",
+        elapsed: state.clock ?? null
+      }
+    },
+    league: {
+      id: match.league?.id,
+      name: match.league?.name,
+      country: match.country?.name || match.league?.country?.name
+    },
+    teams: {
+      home: match.homeTeam ? { id: match.homeTeam.id, name: match.homeTeam.name, logo: match.homeTeam.logo } : null,
+      away: match.awayTeam ? { id: match.awayTeam.id, name: match.awayTeam.name, logo: match.awayTeam.logo } : null
+    },
+    goals: { home: currentScore ? Number(currentScore[1]) : null, away: currentScore ? Number(currentScore[2]) : null }
+  };
+}
 
 const HIGHLIGHTLY_KNOCKOUT_COMPETITIONS = {
   73: { name: "Copa do Brasil", aliases: ["Copa do Brasil"], country: "Brazil", knownId: 62907 },
@@ -309,21 +342,35 @@ app.get("/api/fixtures", async (req, res) => {
     const today = new Intl.DateTimeFormat("en-CA", {
       timeZone: "America/Sao_Paulo", year: "numeric", month: "2-digit", day: "2-digit"
     }).format(new Date());
-    const data = await apiFootball("/fixtures", {
-      date: today,
-      timezone: "America/Sao_Paulo"
-    });
-    const filteredFixtures = (data.response || []).filter(item =>
-      ALLOWED_LEAGUES.includes(Number(item.league?.id))
-    );
+    if (fixtureCache.date === today && fixtureCache.expiresAt > Date.now()) {
+      return res.json({ response: fixtureCache.response, results: fixtureCache.response.length, cached: true });
+    }
 
-    res.json({
-      ...data,
-      response: filteredFixtures,
-      results: filteredFixtures.length
-    });
+    const matches = [];
+    const limit = 100;
+    let offset = 0;
+    let totalCount = 0;
+    do {
+      const page = await apiHighlightly("/matches", {
+        date: today,
+        timezone: "America/Sao_Paulo",
+        limit,
+        offset
+      });
+      const batch = page.data || page.response || [];
+      matches.push(...batch);
+      totalCount = Number(page.pagination?.totalCount || batch.length);
+      offset += batch.length;
+      if (!batch.length) break;
+    } while (offset < totalCount && offset < 500);
+
+    const filteredFixtures = matches
+      .filter(isAllowedHighlightlyFixture)
+      .map(normalizeHighlightlyFixture);
+    fixtureCache = { date: today, response: filteredFixtures, expiresAt: Date.now() + FIXTURE_CACHE_TTL };
+    res.json({ response: filteredFixtures, results: filteredFixtures.length, cached: false });
   } catch (error) {
-    res.status(error.status || 500).json({ error: error.message || "Erro interno ao consultar partidas." });
+    res.status(error.status || 500).json({ error: error.message || "Erro interno ao consultar partidas na Highlightly." });
   }
 });
 
