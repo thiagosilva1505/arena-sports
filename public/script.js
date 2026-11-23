@@ -365,20 +365,107 @@ function renderFixtures(fixtures) {
   }).join("");
 }
 
+
 function renderMatchStatistics(statistics, homeTeamId, awayTeamId) {
-  let teams = Array.isArray(statistics) ? statistics : statistics?.data || [];
+  let teams = Array.isArray(statistics)
+    ? statistics
+    : statistics?.data || [];
 
   if (homeTeamId && awayTeamId && teams.length > 1) {
-    const home = teams.find(team => String(team.team?.id) === String(homeTeamId));
-    const away = teams.find(team => String(team.team?.id) === String(awayTeamId));
+    const home = teams.find(team =>
+      String(team.team?.id) === String(homeTeamId)
+    );
+    const away = teams.find(team =>
+      String(team.team?.id) === String(awayTeamId)
+    );
+
     if (home && away) teams = [home, away];
   }
 
-  if (!teams.length) {
-    return '<p class="match-empty">As estatísticas ainda não estão disponíveis.</p>';
+  if (teams.length < 2) {
+    return '<p class="match-empty">Estatísticas ainda não disponíveis.</p>';
   }
 
-  
+  const allowed = [
+    {
+      names: ["Ball Possession", "Posse de bola"],
+      label: "POSSE DE BOLA"
+    },
+    {
+      names: ["Total Shots", "Total de chutes", "Total shots"],
+      label: "TOTAL DE CHUTES"
+    },
+    {
+      names: ["Shots on Goal", "Chutes ao gol", "Shots on target"],
+      label: "CHUTES AO GOL"
+    },
+    {
+      names: ["Duels Won", "Disputas ganhas", "Duels won"],
+      label: "DISPUTAS GANHAS"
+    }
+  ];
+
+  const safe = value => escapeHTML(
+    value === null || value === undefined || value === ""
+      ? "—"
+      : String(value)
+  );
+
+  const getValue = (team, names) => {
+    const stat = (team.statistics || []).find(item =>
+      names.some(name =>
+        String(item.displayName || item.name || "")
+          .toLowerCase() === name.toLowerCase()
+      )
+    );
+    return stat?.value ?? null;
+  };
+
+  const rows = allowed.map(item => {
+    const home = getValue(teams[0], item.names);
+    const away = getValue(teams[1], item.names);
+
+    if (home === null && away === null) return "";
+
+    const number = value =>
+      parseFloat(String(value ?? "").replace("%", "").replace(",", "."));
+
+    const h = number(home);
+    const a = number(away);
+    const total = h + a;
+
+    const homeWidth = total > 0 && Number.isFinite(total)
+      ? (h / total) * 100 : 50;
+
+    const awayWidth = total > 0 && Number.isFinite(total)
+      ? (a / total) * 100 : 50;
+
+    return `
+      <div class="match-stat-item">
+        <div class="match-stat-name">${item.label}</div>
+
+        <div class="match-stat-values">
+          <strong>${safe(home)}</strong>
+          <strong>${safe(away)}</strong>
+        </div>
+
+        <div class="match-stat-bars">
+          <div class="match-stat-track">
+            <div class="match-stat-fill" style="width:${homeWidth}%"></div>
+          </div>
+          <div class="match-stat-track">
+            <div class="match-stat-fill" style="width:${awayWidth}%"></div>
+          </div>
+        </div>
+      </div>
+    `;
+  }).join("");
+
+  return rows
+    ? `<div class="match-stats-comparison">${rows}</div>`
+    : '<p class="match-empty">A API não disponibilizou essas estatísticas.</p>';
+}
+
 const translations = {
   "Ball Possession": "Posse de bola",
   "Total Shots": "Total de chutes",
