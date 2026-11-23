@@ -1,0 +1,221 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="Arena Sports: notícias, placares e estatísticas esportivas.">
+  <title>Arena Sports | Notícias e resultados</title>
+  <link rel="icon" type="image/png" href="favicon.png">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <script>try{if(localStorage.getItem("arena-theme")==="light")document.documentElement.dataset.theme="light"}catch{}</script>
+  <link rel="stylesheet" href="style.css">
+  <script src="api-config.js" defer></script>
+  <script src="script.js" defer></script>
+</head>
+
+<body>
+  <div class="topline">
+    <div class="container topline-inner"><span>ARENA SPORTS <span class="muted">/ O JOGO NÃO PARA</span></span><span
+        id="today-label">ESPORTE • INFORMAÇÃO • ANÁLISE</span></div>
+  </div>
+
+  <header class="site-header">
+    <div class="container header-inner">
+      <a class="brand" href="#" aria-label="Arena Sports início"><img class="brand-mark-image" src="arena-sports-mark.png" alt=""><span>ARENA<span
+            class="brand-light">SPORTS</span></span></a>
+      <div class="header-actions">
+        <button class="menu-toggle" id="menu-toggle" aria-label="Abrir menu" aria-expanded="false">☰</button>
+        <button class="theme-toggle" id="theme-toggle" type="button" aria-label="Ativar tema claro"><span aria-hidden="true">☀</span><span>Tema claro</span></button>
+      </div>
+      <nav class="main-nav" id="main-nav" aria-label="Menu principal">
+        <a class="active" href="#inicio">Início</a><a href="#placares">Jogos ao vivo</a><a
+          href="#classificacao">Classificações</a><a href="#noticias">Notícias</a>
+      </nav>
+      <label class="search-box"><span aria-hidden="true">⌕</span><input id="search-input" type="search"
+          placeholder="Buscar notícia..." aria-label="Buscar notícia"></label>
+    </div>
+  </header>
+
+  <main class="container" id="inicio">
+    <section class="welcome-row">
+      <div>
+        <p class="eyebrow"><span class="live-dot"></span> SUA CENTRAL ESPORTIVA</p>
+        <h1>O esporte acontece.<br><span>A gente te conta.</span></h1>
+        <p class="intro">Notícias, resultados e números para quem vive cada jogo.</p>
+      </div>
+      <div class="date-card"><span class="date-label">ACOMPANHE DE PERTO</span><strong>Todos os
+          esportes.</strong><span>Um só lugar.</span></div>
+    </section>
+
+    <section class="section-block" id="placares">
+      <div class="section-heading">
+        <div>
+          <p class="eyebrow">ACOMPANHE EM TEMPO REAL</p>
+          <h2>Central de placares <span class="live-badge"><i></i> AO VIVO</span></h2>
+        </div><span class="section-note">Ligas e seleções • Highlightly</span>
+      </div>
+      <div class="score-grid" id="score-grid" aria-live="polite">
+        <article class="score-card"><strong>Carregando partidas...</strong>
+          <p class="demo-notice">Estamos consultando os jogos de hoje.</p>
+        </article>
+      </div>
+      <div class="api-toolbar">
+        <p class="demo-notice" id="api-status">Carregando dados esportivos... A atualização automática será feita a cada
+          20 minutos.</p><button class="refresh-button" id="refresh-scores">↻ Atualizar placares</button>
+      </div>
+    </section>
+
+    <section class="section-block data-layout" id="classificacao">
+      <div class="table-panel">
+        <div class="section-heading compact">
+          <div>
+            <p class="eyebrow">CAMPEONATO • DADOS REAIS</p>
+            <h2>Classificação</h2>
+          </div>
+          <span class="table-tag">FUTEBOL</span>
+        </div>
+
+        <div class="standings-controls">
+          <label for="league-select">Campeonato</label>
+          <select id="league-select">
+            <optgroup label="América do Sul">
+              <option value="71">Brasileirão Série A</option>
+              <option value="72">Brasileirão Série B</option>
+              <option value="73">Copa do Brasil</option>
+              <option value="128">Argentina - Liga Profesional</option>
+              <option value="130">Copa Argentina</option>
+              <option value="13">Copa Libertadores</option>
+              <option value="11">Copa Sul-Americana</option>
+            </optgroup>
+            <optgroup label="Europa">
+              <option value="2">Champions League</option>
+              <option value="3">Europa League</option>
+              <option value="848">Conference League</option>
+              <option value="39">Inglaterra - Premier League</option>
+              <option value="40">Inglaterra - Championship</option>
+              <option value="45">Inglaterra - FA Cup</option>
+              <option value="140">Espanha - La Liga</option>
+              <option value="143">Espanha - Copa del Rey</option>
+              <option value="135">Itália - Serie A</option>
+              <option value="137">Itália - Coppa Italia</option>
+              <option value="78">Alemanha - Bundesliga</option>
+              <option value="81">Alemanha - DFB-Pokal</option>
+              <option value="61">França - Ligue 1</option>
+              <option value="66">França - Coupe de France</option>
+              <option value="94">Portugal - Primeira Liga</option>
+              <option value="96">Portugal - Taça de Portugal</option>
+              <option value="203">Turquia - Süper Lig</option>
+              <option value="206">Turquia - Copa da Turquia</option>
+            </optgroup>
+            <optgroup label="Arábia Saudita">
+              <option value="307">Saudi Pro League</option>
+              <option value="504">King's Cup</option>
+            </optgroup>
+            <optgroup label="Estados Unidos">
+              <option value="253">MLS</option>
+              <option value="257">US Open Cup</option>
+            </optgroup>
+          </select>
+          <span id="standings-season"></span>
+        </div>
+
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>#</th>
+                <th>Equipe</th>
+                <th>PTS</th>
+                <th>J</th>
+                <th>V</th>
+                <th>E</th>
+                <th>D</th>
+                <th>GP</th>
+                <th>GC</th>
+                <th>SG</th>
+              </tr>
+            </thead>
+            <tbody id="standings-body">
+              <tr>
+                <td colspan="10">Carregando classificação...</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <p class="demo-notice small" id="standings-status">
+          Consultando classificação da API esportiva...
+        </p>
+      </div>
+      <aside class="stats-panel" id="estatisticas">
+        <div class="section-heading compact">
+          <div>
+            <p class="eyebrow">NÚMEROS DO JOGO</p>
+            <h2>Em destaque</h2>
+          </div>
+        </div>
+        <div class="stat-item">
+          <div class="stat-icon">⚽</div>
+          <div class="stat-info"><span>Gols por partida</span><strong>— <small>média</small></strong>
+            <div class="stat-bar"><i style="width:0%"></i></div>
+          </div>
+        </div>
+        <div class="stat-item">
+          <div class="stat-icon">🥅</div>
+          <div class="stat-info"><span>Finalizações no alvo</span><strong>— <small>média</small></strong>
+            <div class="stat-bar"><i style="width:0%"></i></div>
+          </div>
+        </div>
+        <div class="stat-item">
+          <div class="stat-icon">📊</div>
+          <div class="stat-info"><span>Posse de bola</span><strong>— <small>média</small></strong>
+            <div class="stat-bar"><i style="width:0%"></i></div>
+          </div>
+        </div>
+        <p class="demo-notice small">Indicadores gerais de futebol. Os dados detalhados aparecem ao abrir cada partida.</p>
+      </aside>
+    </section>
+
+    <section class="section-block news-section" id="noticias">
+      <div class="section-heading">
+        <div>
+          <p class="eyebrow">DENTRO E FORA DE CAMPO</p>
+          <h2>Últimas notícias</h2>
+        </div><span class="section-note" id="news-count">Carregando notícias...</span>
+      </div>
+      <section class="sports-filter" aria-label="Filtrar esportes">
+        <button class="sport-chip selected" data-sport="Todos">Todos</button><button class="sport-chip"
+          data-sport="Futebol">⚽ Futebol</button><button class="sport-chip" data-sport="Basquete">🏀
+          Basquete</button><button class="sport-chip" data-sport="Vôlei">🏐 Vôlei</button><button class="sport-chip"
+          data-sport="Tênis">🎾 Tênis</button><button class="sport-chip" data-sport="Fórmula 1">🏎️ Fórmula 1</button>
+      </section>
+      <p class="news-feed-status" id="news-status" aria-live="polite">Buscando as notícias mais recentes...</p>
+      <div class="news-grid" id="news-grid"></div>
+      <p class="empty-state" id="empty-state" hidden>Nenhuma notícia encontrada. Tente outra busca ou modalidade.</p>
+    </section>
+
+    <section class="newsletter">
+      <div>
+        <p class="eyebrow">FIQUE POR DENTRO</p>
+        <h2>O esporte não espera.</h2>
+        <p>Esta área poderá receber novidades e alertas esportivos em uma próxima etapa.</p>
+      </div><a href="#inicio" class="button-link">Explorar o portal ↑</a>
+    </section>
+  </main>
+
+  <footer class="site-footer">
+    <div class="container footer-inner"><a class="brand" href="#inicio" aria-label="Arena Sports início"><img class="brand-mark-image" src="arena-sports-mark.png" alt=""><span>ARENA<span class="brand-light">SPORTS</span></span></a><span>Projeto
+        demonstrativo desenvolvido para fins de aprendizado.</span><span>© <span id="year"></span> Arena Sports</span>
+    </div>
+  </footer>
+  <dialog class="match-modal" id="match-modal" aria-labelledby="match-modal-title">
+    <div class="match-modal-header"><div><p class="eyebrow">ARENA SPORTS • ANÁLISE</p><h2 id="match-modal-title">Dados da partida</h2></div><button id="match-modal-close" class="match-modal-close" type="button" aria-label="Fechar">×</button></div>
+    <div id="match-modal-content" class="match-modal-content"></div>
+  </dialog>
+
+</body>
+
+</html>
