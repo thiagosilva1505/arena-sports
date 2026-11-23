@@ -364,23 +364,96 @@ function renderFixtures(fixtures) {
     </article>`;
   }).join("");
 }
+
 function renderMatchStatistics(statistics, homeTeamId, awayTeamId) {
   let teams = Array.isArray(statistics) ? statistics : statistics?.data || [];
+
   if (homeTeamId && awayTeamId && teams.length > 1) {
     const home = teams.find(team => String(team.team?.id) === String(homeTeamId));
     const away = teams.find(team => String(team.team?.id) === String(awayTeamId));
     if (home && away) teams = [home, away];
   }
-  if (!teams.length) return '<p class="match-empty">As estatísticas ainda não estão disponíveis para esta partida.</p>';
-  const allNames = [...new Set(teams.flatMap(team => (team.statistics || []).map(stat => stat.displayName)))];
-  if (!allNames.length) return '<p class="match-empty">A API ainda não disponibilizou estatísticas.</p>';
-  const safe = value => escapeHTML(value === null || value === undefined || value === "" ? "—" : String(value));
-  return `<div class="match-stats-table"><div class="match-stats-head"><span>${safe(teams[0]?.team?.name || "Mandante")}</span><span>Indicador</span><span>${safe(teams[1]?.team?.name || "Visitante")}</span></div>${allNames.map(name => {
-    const home = (teams[0]?.statistics || []).find(item => item.displayName === name)?.value;
-    const away = (teams[1]?.statistics || []).find(item => item.displayName === name)?.value;
-    return `<div class="match-stat-row"><strong>${safe(home)}</strong><span>${safe(name)}</span><strong>${safe(away)}</strong></div>`;
-  }).join("")}</div>`;
+
+  if (!teams.length) {
+    return '<p class="match-empty">As estatísticas ainda não estão disponíveis.</p>';
+  }
+
+  const translations = {
+    "Ball Possession": "Posse de bola",
+    "Total Shots": "Total de chutes",
+    "Shots on Goal": "Chutes ao gol",
+    "Shots off Goal": "Chutes para fora",
+    "Blocked Shots": "Chutes bloqueados",
+    "Shots insidebox": "Chutes dentro da área",
+    "Shots outsidebox": "Chutes fora da área",
+    "Corner Kicks": "Escanteios",
+    "Fouls": "Faltas",
+    "Yellow Cards": "Cartões amarelos",
+    "Red Cards": "Cartões vermelhos",
+    "Goalkeeper Saves": "Defesas do goleiro",
+    "Total passes": "Total de passes",
+    "Passes accurate": "Passes certos",
+    "Passes %": "Precisão nos passes",
+    "Offsides": "Impedimentos",
+    "Tackles": "Desarmes",
+    "Duels Won": "Disputas ganhas",
+    "Aerial Duels Won": "Disputas aéreas ganhas",
+    "Expected Goals": "Gols esperados (xG)"
+  };
+
+  const safe = value => escapeHTML(
+    value === null || value === undefined || value === "" ? "—" : String(value)
+  );
+
+  const allNames = [
+    ...new Set(teams.flatMap(team =>
+      (team.statistics || []).map(stat => stat.displayName)
+    ))
+  ];
+
+  if (!allNames.length) {
+    return '<p class="match-empty">A API ainda não disponibilizou estatísticas.</p>';
+  }
+
+  const rows = allNames.map(name => {
+    const home = teams[0]?.statistics?.find(item => item.displayName === name)?.value;
+    const away = teams[1]?.statistics?.find(item => item.displayName === name)?.value;
+
+    const homeNumber = parseFloat(String(home ?? "").replace("%", "").replace(",", "."));
+    const awayNumber = parseFloat(String(away ?? "").replace("%", "").replace(",", "."));
+
+    const validNumbers = Number.isFinite(homeNumber) && Number.isFinite(awayNumber);
+    const total = validNumbers ? homeNumber + awayNumber : 0;
+
+    const homePercent = total > 0 ? (homeNumber / total) * 100 : 50;
+    const awayPercent = total > 0 ? (awayNumber / total) * 100 : 50;
+
+    const label = translations[name] || name;
+
+    return `
+      <div class="match-stat-item">
+        <span class="match-stat-name">${safe(label)}</span>
+
+        <div class="match-stat-values">
+          <strong>${safe(home)}</strong>
+          <strong>${safe(away)}</strong>
+        </div>
+
+        <div class="match-stat-bars">
+          <div class="match-stat-track">
+            <div class="match-stat-fill" style="width:${homePercent}%"></div>
+          </div>
+          <div class="match-stat-track">
+            <div class="match-stat-fill" style="width:${awayPercent}%"></div>
+          </div>
+        </div>
+      </div>
+    `;
+  }).join("");
+
+  return `<div class="match-stats-comparison">${rows}</div>`;
 }
+
 
 function renderLineupTeam(team, fallbackName) {
   if (!team) return `<section class="lineup-team"><h4>${escapeHTML(fallbackName)}</h4><p class="match-empty">Escalação ainda não divulgada.</p></section>`;
