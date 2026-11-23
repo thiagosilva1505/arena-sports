@@ -378,38 +378,32 @@ function renderMatchStatistics(statistics, homeTeamId, awayTeamId) {
     return '<p class="match-empty">As estatísticas ainda não estão disponíveis.</p>';
   }
 
-  const translations = {
-    "Ball Possession": "Posse de bola",
-    "Total Shots": "Total de chutes",
-    "Shots on Goal": "Chutes ao gol",
-    "Shots off Goal": "Chutes para fora",
-    "Blocked Shots": "Chutes bloqueados",
-    "Shots insidebox": "Chutes dentro da área",
-    "Shots outsidebox": "Chutes fora da área",
-    "Corner Kicks": "Escanteios",
-    "Fouls": "Faltas",
-    "Yellow Cards": "Cartões amarelos",
-    "Red Cards": "Cartões vermelhos",
-    "Goalkeeper Saves": "Defesas do goleiro",
-    "Total passes": "Total de passes",
-    "Passes accurate": "Passes certos",
-    "Passes %": "Precisão nos passes",
-    "Offsides": "Impedimentos",
-    "Tackles": "Desarmes",
-    "Duels Won": "Disputas ganhas",
-    "Aerial Duels Won": "Disputas aéreas ganhas",
-    "Expected Goals": "Gols esperados (xG)"
+  
+const translations = {
+  "Ball Possession": "Posse de bola",
+  "Total Shots": "Total de chutes",
+  "Shots on Goal": "Chutes ao gol",
+  "Duels Won": "Disputas ganhas"
+};
+
   };
 
   const safe = value => escapeHTML(
     value === null || value === undefined || value === "" ? "—" : String(value)
   );
 
-  const allNames = [
-    ...new Set(teams.flatMap(team =>
-      (team.statistics || []).map(stat => stat.displayName)
-    ))
-  ];
+  const allowedStats = [
+  "Ball Possession",
+  "Total Shots",
+  "Shots on Goal",
+  "Duels Won"
+];
+
+const allNames = allowedStats.filter(name =>
+  teams.some(team =>
+    (team.statistics || []).some(stat => stat.displayName === name)
+  )
+);
 
   if (!allNames.length) {
     return '<p class="match-empty">A API ainda não disponibilizou estatísticas.</p>';
