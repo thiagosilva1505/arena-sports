@@ -405,7 +405,30 @@ async function openMatchDetails(matchId, card) {
     const awayName = card.querySelector(".team.away span")?.textContent || "Visitante";
     const statsError = details.errors?.statistics;
     const lineupError = details.errors?.lineups;
-    matchModalContent.innerHTML = `<section class="match-modal-section"><h3>Estatísticas</h3>${statsError ? '<p class="match-empty">Não foi possível consultar as estatísticas agora.</p>' : stats}</section><section class="match-modal-section"><h3>Escalações</h3>${lineupError ? '<p class="match-empty">Não foi possível consultar as escalações agora.</p>' : `<div class="lineups-grid">${renderLineupTeam(lineups.homeTeam, homeName)}${renderLineupTeam(lineups.awayTeam, awayName)}</div>`}</section><p class="match-data-note">Os dados dependem da cobertura da partida e da divulgação oficial das escalações.</p>`;
+    matchModalContent.innerHTML = `
+  <section class="match-modal-section">
+    <h3>Escalações</h3>
+    ${lineupError
+      ? '<p class="match-empty">Não foi possível consultar as escalações agora.</p>'
+      : `<div class="lineups-grid">
+          ${renderLineupTeam(lineups.homeTeam, homeName)}
+          ${renderLineupTeam(lineups.awayTeam, awayName)}
+        </div>`
+    }
+  </section>
+
+  <section class="match-modal-section">
+    <h3>Estatísticas ao vivo</h3>
+    ${statsError
+      ? '<p class="match-empty">Não foi possível consultar as estatísticas agora.</p>'
+      : stats
+    }
+  </section>
+
+  <p class="match-data-note">
+    Os dados dependem da cobertura da partida e da divulgação oficial das escalações.
+  </p>
+`;
   } catch (error) {
     matchModalContent.innerHTML = `<p class="match-empty">${escapeHTML(error.message || "Erro ao carregar os dados da partida.")}</p>`;
   }
