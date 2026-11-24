@@ -176,7 +176,7 @@ html[data-theme="light"] .brand-mark-image{border-radius:5px;box-shadow:0 0 0 1p
 .match-details-button{width:100%;margin-top:13px;padding:10px 12px;border:1px solid var(--line);border-radius:8px;background:var(--surface2);color:var(--green);font-size:10px;font-weight:800;cursor:pointer;transition:background .2s,border-color .2s}
 .match-details-button:hover{background:#26352c;border-color:var(--green)}
 .match-details-button:disabled{opacity:.45;cursor:not-allowed}
-.match-modal{width:min(900px,calc(100% - 28px));max-width:900px;max-height:88vh;padding:0;border:1px solid var(--line);border-radius:16px;background:var(--surface);color:var(--text);box-shadow:0 24px 80px #0009}
+.match-modal{width:min(900px,calc(100% - 28px));max-width:900px;max-height:90vh;padding:0;border:1px solid var(--line);border-radius:16px;background:var(--surface);color:var(--text);box-shadow:0 24px 80px #0009}
 .match-modal::backdrop{background:#050807c9;backdrop-filter:blur(4px)}
 .match-modal-header{display:flex;align-items:center;justify-content:space-between;gap:15px;padding:20px 22px;border-bottom:1px solid var(--line);position:sticky;top:0;background:var(--surface);z-index:2}
 .match-modal-header .eyebrow{margin:0 0 5px}.match-modal-header h2{font-size:20px;margin:0;letter-spacing:-.5px}
