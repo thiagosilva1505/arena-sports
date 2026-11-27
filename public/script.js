@@ -533,6 +533,7 @@ async function loadFixtures(isAutomatic = false) {
   if (document.hidden && isAutomatic) return;
   refreshButton.disabled = true;
   refreshButton.textContent = "Carregando...";
+  apiStatus.style.display = "";
   apiStatus.textContent = "Consultando a Highlightly...";
   try {
     if (!isAutomatic) {
@@ -556,8 +557,10 @@ async function loadFixtures(isAutomatic = false) {
       }));
     } catch {}
     const updated = new Intl.DateTimeFormat("pt-BR", { hour: "2-digit", minute: "2-digit", second: "2-digit" }).format(new Date());
-    apiStatus.textContent = `Dados reais recebidos da Highlightly • última consulta às ${updated}. Atualização automática a cada 20 minutos.`;
+    apiStatus.textContent = "";
+    apiStatus.style.display = "none";
   } catch (error) {
+    apiStatus.style.display = "";
     apiStatus.textContent = `${error.message} Confira HIGHLIGHTLY_API_KEY no arquivo .env e se o servidor está rodando.`;
   } finally {
     refreshButton.disabled = false;
