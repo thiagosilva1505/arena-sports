@@ -441,20 +441,28 @@ async function openMatchDetails(matchId, card) {
     const statsError = details.errors?.statistics;
     const lineupError = details.errors?.lineups;
     const eventsError = details.errors?.events;
+    const competition = card.querySelector(".score-meta span")?.textContent || "";
+    const statusText = card.querySelector(".score-meta .status")?.textContent || "";
+    const scoreText = (card.querySelector(".score")?.textContent || "").replace(/\s+/g, "").replace(":", " : ");
+    const homeLogo = card.querySelector(".team:not(.away) img.team-logo")?.outerHTML || "";
+    const awayLogo = card.querySelector(".team.away img.team-logo")?.outerHTML || "";
     matchModalContent.innerHTML = `
-  <section class="match-modal-section">
-    <h3>Escalações</h3>
-    ${lineupError
-      ? '<p class="match-empty">Não foi possível consultar as escalações agora.</p>'
-      : `<div class="lineups-grid">
-          ${renderLineupTeam(lineups.homeTeam, homeName)}
-          ${renderLineupTeam(lineups.awayTeam, awayName)}
-        </div>`
-    }
-  </section>
+  <div class="match-summary">
+    <div class="match-summary-meta"><span>${escapeHTML(competition)}</span><span class="match-summary-status">${escapeHTML(statusText)}</span></div>
+    <div class="match-summary-score">
+      <div class="match-summary-team">${homeLogo}<b>${escapeHTML(homeName)}</b></div>
+      <div class="match-summary-result" aria-label="Placar">${escapeHTML(scoreText)}</div>
+      <div class="match-summary-team">${awayLogo}<b>${escapeHTML(awayName)}</b></div>
+    </div>
+  </div>
 
+  <div class="match-tabs" role="tablist" aria-label="Seções dos dados da partida">
+    <button type="button" class="match-tab" role="tab" id="match-tab-resumo" data-tab="resumo" aria-selected="true" aria-controls="match-panel-resumo">Resumo</button>
+    <button type="button" class="match-tab" role="tab" id="match-tab-estatisticas" data-tab="estatisticas" aria-selected="false" aria-controls="match-panel-estatisticas" tabindex="-1">Estatísticas</button>
+    <button type="button" class="match-tab" role="tab" id="match-tab-escalacoes" data-tab="escalacoes" aria-selected="false" aria-controls="match-panel-escalacoes" tabindex="-1">Escalações</button>
+  </div>
 
-  <section class="match-modal-section">
+  <section class="match-panel" role="tabpanel" id="match-panel-resumo" aria-labelledby="match-tab-resumo">
     <h3>Gols e assistências</h3>
     ${eventsError
       ? '<p class="match-empty">Não foi possível consultar os gols e assistências agora.</p>'
@@ -462,11 +470,20 @@ async function openMatchDetails(matchId, card) {
     }
   </section>
 
-  <section class="match-modal-section">
-    <h3>Estatísticas da partida</h3>
+  <section class="match-panel" role="tabpanel" id="match-panel-estatisticas" aria-labelledby="match-tab-estatisticas" hidden>
     ${statsError
       ? '<p class="match-empty">Não foi possível consultar as estatísticas agora.</p>'
       : stats
+    }
+  </section>
+
+  <section class="match-panel" role="tabpanel" id="match-panel-escalacoes" aria-labelledby="match-tab-escalacoes" hidden>
+    ${lineupError
+      ? '<p class="match-empty">Não foi possível consultar as escalações agora.</p>'
+      : `<div class="lineups-grid">
+          ${renderLineupTeam(lineups.homeTeam, homeName)}
+          ${renderLineupTeam(lineups.awayTeam, awayName)}
+        </div>`
     }
   </section>
 
@@ -484,6 +501,28 @@ scoreGrid.addEventListener("click", event => {
   if (!button || button.disabled) return;
   const card = button.closest(".score-card");
   openMatchDetails(button.dataset.matchId, card);
+});
+matchModalContent?.addEventListener("click", event => {
+  const tab = event.target.closest(".match-tab");
+  if (!tab) return;
+  matchModalContent.querySelectorAll(".match-tab").forEach(item => {
+    const active = item === tab;
+    item.setAttribute("aria-selected", String(active));
+    item.tabIndex = active ? 0 : -1;
+  });
+  matchModalContent.querySelectorAll(".match-panel").forEach(panel => {
+    panel.hidden = panel.id !== tab.getAttribute("aria-controls");
+  });
+  matchModalContent.scrollTop = 0;
+});
+matchModalContent?.addEventListener("keydown", event => {
+  if (event.key !== "ArrowRight" && event.key !== "ArrowLeft") return;
+  const tabs = [...matchModalContent.querySelectorAll(".match-tab")];
+  const current = tabs.indexOf(document.activeElement);
+  if (current < 0) return;
+  const next = tabs[(current + (event.key === "ArrowRight" ? 1 : tabs.length - 1)) % tabs.length];
+  next.focus();
+  next.click();
 });
 matchModalClose?.addEventListener("click", () => matchModal.close());
 matchModal?.addEventListener("click", event => {
