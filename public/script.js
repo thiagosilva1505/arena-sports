@@ -282,7 +282,8 @@ function translateCompetitionName(league = {}) {
   return countrySpecific[`${country}|${name}`] || competitionSpecific[name] || league.name || "Futebol";
 }
 
-function translateCompetitionCountry(country) {
+function translateCompetitionCountry(country, leagueName) {
+  if (/uefa/i.test(String(leagueName || ""))) return "Europa";
   const countries = {
     "world": "Seleções",
     "international": "Seleções",
@@ -353,7 +354,7 @@ function renderFixtures(fixtures) {
       ? `<img class="team-logo" src="${teams.away.logo}" alt="" data-fallback="${awayName.slice(0, 3).toUpperCase()}" loading="lazy" referrerpolicy="no-referrer">`
       : `<span class="team-icon">${awayName.slice(0, 3).toUpperCase()}</span>`;
     return `<article class="score-card" data-match-id="${matchId || ""}" data-home-team-id="${teams.home?.id || ""}" data-away-team-id="${teams.away?.id || ""}">
-      <div class="score-meta"><span>${escapeHTML(translateCompetitionName(league))}${league.country ? " • " + escapeHTML(translateCompetitionCountry(league.country)) : ""}</span><span class="status ${live ? "live" : finished ? "" : "scheduled"}">${status}</span></div>
+      <div class="score-meta"><span>${escapeHTML(translateCompetitionName(league))}${league.country ? " • " + escapeHTML(translateCompetitionCountry(league.country, league.name)) : ""}</span><span class="status ${live ? "live" : finished ? "" : "scheduled"}">${status}</span></div>
       <div class="match">
         <div class="team">${homeLogo}<span>${homeName}</span></div>
         <strong class="score">${scoreValue(goals.home)} <small>:</small> ${scoreValue(goals.away)}</strong>
