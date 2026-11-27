@@ -285,6 +285,7 @@ html[data-theme="light"] .brand-mark-image{border-radius:5px;box-shadow:0 0 0 1p
 .news-card{position:relative;display:flex;flex-direction:column;border-left:3px solid var(--accent,var(--green));transition:transform .2s,box-shadow .2s,border-color .2s}
 .news-card:hover{transform:translateY(-3px);border-color:var(--accent,var(--green));box-shadow:0 10px 24px #0000002e}
 .news-card:focus-within{outline:2px solid var(--green);outline-offset:2px}
+.news-card[hidden]{display:none}
 .news-card[data-sport="Futebol"]{--accent:#4fae5c}
 .news-card[data-sport="Basquete"]{--accent:#e0833a}
 .news-card[data-sport="Vôlei"]{--accent:#4aa3d6}
