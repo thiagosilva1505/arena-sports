@@ -53,43 +53,13 @@ function filterNews() {
   newsCount.textContent = `${visible} ${visible === 1 ? "notícia" : "notícias"}`;
 }
 
-const newsVisuals = {
-  "Futebol": ["image-football", "⚽"], "Basquete": ["image-basketball", "🏀"],
-  "Vôlei": ["image-volley", "🏐"], "Tênis": ["image-tennis", "🎾"],
-  "Fórmula 1": ["image-f1", "🏎️"]
-};
-
 function renderNews(items) {
   newsGrid.replaceChildren();
   items.forEach((item) => {
-    const [visualClass, emoji] = newsVisuals[item.sport] || ["image-stats", "📰"];
     const card = document.createElement("article");
     card.className = "news-card";
     card.dataset.sport = item.sport || "Todos";
     card.dataset.title = item.title || "";
-    const image = document.createElement("div");
-    image.className = `news-image ${visualClass}`;
-    const label = document.createElement("span");
-    label.textContent = (item.sport || "Esportes").toLocaleUpperCase("pt-BR");
-    const icon = document.createElement("b");
-    icon.textContent = emoji;
-    let imageUrl = "";
-    try {
-      const parsedImageUrl = new URL(item.image);
-      if (parsedImageUrl.protocol === "https:") imageUrl = parsedImageUrl.href;
-    } catch {}
-    if (imageUrl) {
-      const cover = document.createElement("img");
-      cover.className = "news-cover";
-      cover.src = imageUrl;
-      cover.alt = "";
-      cover.loading = "lazy";
-      cover.referrerPolicy = "no-referrer";
-      image.classList.add("has-cover");
-      icon.hidden = true;
-      image.append(cover);
-    }
-    image.append(label, icon);
 
     const copy = document.createElement("div");
     copy.className = "news-copy";
@@ -118,7 +88,7 @@ function renderNews(items) {
     link.rel = "noopener noreferrer";
     link.textContent = "Ler no site da publicação ↗";
     copy.append(category, heading, meta, link);
-    card.append(image, copy);
+    card.append(copy);
     newsGrid.append(card);
   });
   newsCards = [...newsGrid.querySelectorAll(".news-card")];
@@ -138,16 +108,6 @@ async function loadNews() {
     newsCount.textContent = "Feed indisponível";
   }
 }
-
-newsGrid.addEventListener("error", event => {
-  const cover = event.target;
-  if (!(cover instanceof HTMLImageElement) || !cover.classList.contains("news-cover")) return;
-  const container = cover.closest(".news-image");
-  cover.remove();
-  container?.classList.remove("has-cover");
-  const icon = container?.querySelector("b");
-  if (icon) icon.hidden = false;
-}, true);
 
 sportButtons.forEach((button) => button.addEventListener("click", () => {
   sportButtons.forEach((item) => item.classList.remove("selected"));
